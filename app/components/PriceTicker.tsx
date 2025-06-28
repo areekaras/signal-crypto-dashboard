@@ -1,8 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { theme } from '../theme/theme';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/AppNavigator'; // Import the types
 
+// Define the component's props
 interface PriceTickerProps {
+  id: string; // We need the id to navigate
   name: string;
   symbol: string;
   price: number;
@@ -10,81 +15,75 @@ interface PriceTickerProps {
   iconUrl: string;
 }
 
-const PriceTicker: React.FC<PriceTickerProps> = ({
-  name,
-  symbol,
-  price,
-  priceChangePercentage,
-  iconUrl,
-}) => {
+// Define the navigation prop type
+type NavigationProps = StackNavigationProp<RootStackParamList, 'Details'>;
+
+const PriceTicker: React.FC<PriceTickerProps> = ({ id, name, symbol, price, priceChangePercentage, iconUrl }) => {
+  const navigation = useNavigation<NavigationProps>();
+
+  const priceChangeStyle =
+    priceChangePercentage >= 0 ? styles.positiveChange : styles.negativeChange;
+
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'SGD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
   }).format(price);
 
-  const priceChangeColor =
-    priceChangePercentage >= 0 ? theme.colors.success : theme.colors.error;
-
-  const formattedPriceChange = `${priceChangePercentage >= 0 ? '+' : ''}${priceChangePercentage.toFixed(2)}%`;
+  const handlePress = () => {
+    navigation.navigate('Details', { coinId: id });
+  };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={handlePress} style={styles.container}>
       <Image source={{ uri: iconUrl }} style={styles.icon} />
-      <View style={styles.textContainer}>
+      <View style={styles.nameContainer}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.symbol}>{symbol.toUpperCase()}</Text>
       </View>
       <View style={styles.priceContainer}>
         <Text style={styles.price}>{formattedPrice}</Text>
-        <Text style={[styles.priceChange, { color: priceChangeColor }]}>
-          {formattedPriceChange}
-        </Text>
+        <Text style={priceChangeStyle}>{priceChangePercentage.toFixed(2)}%</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    padding: theme.spacing.m,
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: theme.colors.cardBackground,
-    borderRadius: 8,
-    marginBottom: 10,
   },
   icon: {
     width: 40,
     height: 40,
-    marginRight: 15,
+    marginRight: theme.spacing.m,
   },
-  textContainer: {
+  nameContainer: {
     flex: 1,
   },
   name: {
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: 'bold',
-    color: theme.colors.text,
   },
   symbol: {
-    fontSize: 14,
     color: theme.colors.subtext,
-    marginTop: 2,
+    fontSize: 14,
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   price: {
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: 'bold',
-    color: theme.colors.text,
   },
-  priceChange: {
-    fontSize: 14,
-    marginTop: 2,
+  positiveChange: {
+    color: theme.colors.success,
+  },
+  negativeChange: {
+    color: theme.colors.error,
   },
 });
 

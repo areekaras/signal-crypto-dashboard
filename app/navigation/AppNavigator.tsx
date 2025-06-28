@@ -1,53 +1,39 @@
 import React from 'react';
-import { View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { createStackNavigator } from '@react-navigation/stack';
+import TabNavigator from './TabNavigator';
+import DetailsScreen from '../screens/DetailsScreen';
 import { theme } from '../theme/theme';
-import MarketsScreen from '../screens/MarketsScreen';
 
-const Tab = createBottomTabNavigator();
-
-const WatchlistScreen = () => <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />; // Placeholder
-
-const AppNavigator = () => {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-
-          if (route.name === 'Markets') {
-            iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          } else if (route.name === 'Watchlist') {
-            iconName = focused ? 'star' : 'star-outline';
-          } else {
-            iconName = 'help-circle-outline'; // Fallback icon
-          }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          backgroundColor: theme.colors.tabBarBg,
-          borderTopWidth: 0, // Remove top border
-        },
-        headerStyle: {
-          backgroundColor: theme.colors.tabBarBg,
-          borderBottomWidth: 0, // Remove bottom border
-          elevation: 0, // Remove shadow on Android
-          shadowOpacity: 0, // Remove shadow on iOS
-        },
-        headerTintColor: theme.colors.text, // Set header text color
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      })}
-    >
-      <Tab.Screen name="Markets" component={MarketsScreen} />
-      <Tab.Screen name="Watchlist" component={WatchlistScreen} />
-    </Tab.Navigator>
-  );
+export type RootStackParamList = {
+  Main: undefined; // Main refers to the TabNavigator
+  Details: { coinId: string }; // Details screen requires a coinId
 };
 
-export default AppNavigator;
+const Stack = createStackNavigator<RootStackParamList>();
+
+export const AppNavigator = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.colors.tabBarBg,
+        },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          color: theme.colors.text,
+        },
+      }}
+    >
+      <Stack.Screen 
+        name="Main" 
+        component={TabNavigator} 
+        options={{ headerShown: false }} // Hide the header for the main tab screen
+      />
+      <Stack.Screen 
+        name="Details" 
+        component={DetailsScreen} 
+        // The header title will be set dynamically inside the DetailsScreen
+      />
+    </Stack.Navigator>
+  );
+};
