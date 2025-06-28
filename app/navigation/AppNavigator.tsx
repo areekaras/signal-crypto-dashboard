@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { theme } from '../theme/theme';
-import MarketsScreen from '../state/screens/MarketsScreen';
+import MarketsScreen from '../screens/MarketsScreen';
 
 const Tab = createBottomTabNavigator();
 
