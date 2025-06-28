@@ -19,6 +19,7 @@ export const theme = {
     subtext: palette.grey,
     success: palette.green,
     error: palette.red,
+    cardBackground: palette.lightBlue,
     tabBarBg: palette.black,
   },
   spacing: {
