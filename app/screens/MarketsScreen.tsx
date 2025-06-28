@@ -1,7 +1,6 @@
-// app/screens/MarketsScreen.tsx
 import React from 'react';
 import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '../theme/theme';
 import { fetchTop100Coins, Coin } from '../api/coingeckoAPI';
 import PriceTicker from '../components/PriceTicker';
 
