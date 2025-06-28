@@ -28,3 +28,15 @@ export const fetchTop100Coins = async (): Promise<Coin[]> => {
     return [];
   }
 };
+
+// Add this to coingeckoAPI.ts
+export const fetchHistoricalData = async (coinId: string): Promise<number[]> => {
+  const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`, {
+    params: {
+      vs_currency: 'usd',
+      days: '7', // Get data for the last 7 days
+    },
+  });
+  // The API returns an array of [timestamp, price] pairs. We only need the prices.
+  return response.data.prices.map((priceData: [number, number]) => priceData[1]);
+};
