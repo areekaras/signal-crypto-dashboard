@@ -1,23 +1,60 @@
-import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
-import { theme } from '../theme/theme';
-import { RouteProp, useRoute } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { fetchHistoricalData } from '../api/coingeckoAPI';
-import { LineChart } from 'react-native-chart-kit';
-import { useCryptoStore } from '../state/useCryptoStore';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { theme } from "../theme/theme";
+import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../navigation/AppNavigator";
+import { fetchHistoricalData } from "../api/coingeckoAPI";
+import { LineChart } from "react-native-chart-kit";
+import { useCryptoStore } from "../state/useCryptoStore";
+import { useWatchlist } from "../hooks/useWatchlist";
+import { Ionicons } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 
-type DetailsScreenRouteProp = RouteProp<RootStackParamList, 'Details'>;
+type DetailsScreenRouteProp = RouteProp<RootStackParamList, "Details">;
+type NavigationProps = StackNavigationProp<RootStackParamList>;
 
 const DetailsScreen = () => {
   const route = useRoute<DetailsScreenRouteProp>();
+  const navigation = useNavigation<NavigationProps>();
   const { coinId } = route.params;
-  
-  // Find the coin data from our global store
-  const coin = useCryptoStore((state) => state.coins.find((c) => c.id === coinId));
+
+  const coin = useCryptoStore((state) =>
+    state.coins.find((c) => c.id === coinId)
+  );
+  const { watchlist, toggleWatchlist } = useWatchlist();
 
   const [chartData, setChartData] = React.useState<number[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [loadingChart, setLoadingChart] = React.useState(true);
+
+  const isinWatchlist = watchlist.includes(coinId);
+
+  // Use useLayoutEffect to set navigation options BEFORE the screen renders
+  React.useLayoutEffect(() => {
+    if (coin) {
+      navigation.setOptions({
+        title: coin.name,
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => toggleWatchlist(coinId)}
+            style={{ marginRight: 15 }}
+          >
+            <Ionicons
+              name={isinWatchlist ? "star" : "star-outline"}
+              size={24}
+              color={theme.colors.primary}
+            />
+          </TouchableOpacity>
+        ),
+      });
+    }
+  }, [navigation, isinWatchlist, coin]);
 
   React.useEffect(() => {
     const getChartData = async () => {
@@ -27,7 +64,7 @@ const DetailsScreen = () => {
       } catch (error) {
         console.error("Failed to fetch chart data:", error);
       } finally {
-        setLoading(false);
+        setLoadingChart(false);
       }
     };
     getChartData();
@@ -43,20 +80,26 @@ const DetailsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{coin.name} ({coin.symbol.toUpperCase()})</Text>
       <Text style={styles.price}>
-        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'SGD' }).format(coin.current_price)}
+        {new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "SGD",
+        }).format(coin.current_price)}
       </Text>
 
-      {loading ? (
-        <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 50 }} />
+      {loadingChart ? (
+        <ActivityIndicator
+          size="large"
+          color={theme.colors.primary}
+          style={{ marginTop: 50 }}
+        />
       ) : (
         <LineChart
           data={{
-            labels: [], // Hide labels for a sparkline look
+            labels: [],
             datasets: [{ data: chartData }],
           }}
-          width={Dimensions.get('window').width} // from react-native
+          width={Dimensions.get("window").width}
           height={220}
           withDots={false}
           withInnerLines={false}
@@ -68,14 +111,11 @@ const DetailsScreen = () => {
             backgroundGradientFrom: theme.colors.background,
             backgroundGradientTo: theme.colors.background,
             decimalPlaces: 2,
-            color: (opacity = 1) => coin.price_change_percentage_24h >= 0 ? theme.colors.success : theme.colors.error,
+            color: (opacity = 1) =>
+              coin.price_change_percentage_24h >= 0
+                ? theme.colors.success
+                : theme.colors.error,
             labelColor: (opacity = 1) => theme.colors.text,
-            style: {
-              borderRadius: 16,
-            },
-            propsForDots: {
-              r: '0',
-            },
           }}
           style={{
             marginVertical: 8,
@@ -93,14 +133,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     padding: theme.spacing.m,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-  },
   price: {
-    fontSize: 20,
-    color: theme.colors.subtext,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: theme.colors.text,
   },
   text: {
     color: theme.colors.text,
