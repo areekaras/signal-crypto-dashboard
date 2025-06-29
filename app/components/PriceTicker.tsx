@@ -1,13 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { theme } from '../theme/theme';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../navigation/AppNavigator'; // Import the types
+import React from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { theme } from "../theme/theme";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../navigation/AppNavigator";
 
 // Define the component's props
 interface PriceTickerProps {
-  id: string; // We need the id to navigate
+  id: string;
   name: string;
   symbol: string;
   price: number;
@@ -16,21 +16,28 @@ interface PriceTickerProps {
 }
 
 // Define the navigation prop type
-type NavigationProps = StackNavigationProp<RootStackParamList, 'Details'>;
+type NavigationProps = StackNavigationProp<RootStackParamList, "Details">;
 
-const PriceTicker: React.FC<PriceTickerProps> = ({ id, name, symbol, price, priceChangePercentage, iconUrl }) => {
+const PriceTickerComponent: React.FC<PriceTickerProps> = ({
+  id,
+  name,
+  symbol,
+  price,
+  priceChangePercentage,
+  iconUrl,
+}) => {
   const navigation = useNavigation<NavigationProps>();
 
   const priceChangeStyle =
     priceChangePercentage >= 0 ? styles.positiveChange : styles.negativeChange;
 
-  const formattedPrice = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'SGD',
+  const formattedPrice = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "SGD",
   }).format(price);
 
   const handlePress = () => {
-    navigation.navigate('Details', { coinId: id });
+    navigation.navigate("Details", { coinId: id });
   };
 
   return (
@@ -42,17 +49,21 @@ const PriceTicker: React.FC<PriceTickerProps> = ({ id, name, symbol, price, pric
       </View>
       <View style={styles.priceContainer}>
         <Text style={styles.price}>{formattedPrice}</Text>
-        <Text style={priceChangeStyle}>{priceChangePercentage.toFixed(2)}%</Text>
+        <Text style={priceChangeStyle}>
+          {priceChangePercentage.toFixed(2)}%
+        </Text>
       </View>
     </TouchableOpacity>
   );
 };
 
+const PriceTicker = React.memo(PriceTickerComponent);
+
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: theme.spacing.m,
-    alignItems: 'center',
+    alignItems: "center",
   },
   icon: {
     width: 40,
@@ -65,19 +76,19 @@ const styles = StyleSheet.create({
   name: {
     color: theme.colors.text,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   symbol: {
     color: theme.colors.subtext,
     fontSize: 14,
   },
   priceContainer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   price: {
     color: theme.colors.text,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   positiveChange: {
     color: theme.colors.success,
