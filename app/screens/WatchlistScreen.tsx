@@ -5,14 +5,13 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  LayoutAnimation,
 } from "react-native";
 import { theme } from "../theme/theme";
 import { useCryptoStore } from "../state/useCryptoStore";
 import PriceTicker from "../components/PriceTicker";
 import { Coin } from "../api/coingeckoAPI";
 
-// THE FIX: Define renderItem outside the component.
-// This ensures the function reference is stable and not re-created on every render.
 const renderItem = ({ item }: { item: Coin }) => (
   <PriceTicker
     id={item.id}
@@ -27,11 +26,15 @@ const renderItem = ({ item }: { item: Coin }) => (
 const WatchlistScreen = () => {
   const { coins, watchlist, loadingWatchlist } = useCryptoStore();
 
-  // Use React.useMemo to efficiently filter the coins.
-  // This will only re-calculate when the 'coins' or 'watchlist' arrays change.
   const favoritedCoins = React.useMemo(() => {
     return coins.filter((coin) => watchlist.includes(coin.id));
   }, [coins, watchlist]);
+
+  // This effect runs whenever the number of favorited coins changes.
+  React.useEffect(() => {
+    // We trigger the animation *before* the state update causes a re-render.
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+  }, [favoritedCoins.length]);
 
   if (loadingWatchlist) {
     return (
@@ -63,7 +66,6 @@ const WatchlistScreen = () => {
         maxToRenderPerBatch={10}
         windowSize={10}
         getItemLayout={(data, index) => ({
-          // Height of one row (PriceTicker) + height of one separator
           length: 72 + 1,
           offset: (72 + 1) * index,
           index,
