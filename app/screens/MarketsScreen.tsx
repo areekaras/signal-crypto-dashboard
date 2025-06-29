@@ -77,6 +77,13 @@ const MarketsScreen = () => {
         )}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        initialNumToRender={15} // Render a bit more on the initial load
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        getItemLayout={(data, index) =>
+          // Height of one row (PriceTicker) + height of one separator
+          ({ length: 72 + 1, offset: (72 + 1) * index, index })
+        }
       />
     </View>
   );
