@@ -42,9 +42,13 @@ const MarketsScreen = () => {
         ws.connect(productIds, (productId, price, change) => {
           // The ID from WebSocket is 'BTC-SGD', we need to find the coin by its symbol 'btc'
           const symbol = productId.split("-")[0].toLowerCase();
+
+          // THE FIX: Access the latest state directly from the store
+          // to avoid the stale closure problem.
           const coinToUpdate = useCryptoStore
             .getState()
             .coins.find((c) => c.symbol === symbol);
+
           if (coinToUpdate) {
             updateCoinPrice(
               coinToUpdate.id,
