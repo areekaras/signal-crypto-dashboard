@@ -4,10 +4,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { theme } from '../theme/theme';
 import MarketsScreen from '../screens/MarketsScreen';
+import WatchlistScreen from '../screens/WatchlistScreen';
 
 const Tab = createBottomTabNavigator();
-
-const WatchlistScreen = () => <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />; // Placeholder
 
 const TabNavigator = () => {
   return (
