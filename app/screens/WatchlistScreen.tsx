@@ -12,27 +12,30 @@ import { useCryptoStore } from "../state/useCryptoStore";
 import PriceTicker from "../components/PriceTicker";
 import { Coin } from "../api/coingeckoAPI";
 
-const renderItem = ({ item }: { item: Coin }) => (
-  <PriceTicker
-    id={item.id}
-    name={item.name}
-    symbol={item.symbol}
-    price={item.current_price}
-    priceChangePercentage={item.price_change_percentage_24h}
-    iconUrl={item.image}
-  />
-);
-
 const WatchlistScreen = () => {
-  const { coins, watchlist, loadingWatchlist } = useCryptoStore();
+  const { coins, watchlist, loadingWatchlist, toggleWatchlist } =
+    useCryptoStore();
+
+  const renderItem = React.useCallback(
+    ({ item }: { item: Coin }) => (
+      <PriceTicker
+        id={item.id}
+        name={item.name}
+        symbol={item.symbol}
+        price={item.current_price}
+        priceChangePercentage={item.price_change_percentage_24h}
+        iconUrl={item.image}
+        onRemove={toggleWatchlist}
+      />
+    ),
+    [toggleWatchlist]
+  );
 
   const favoritedCoins = React.useMemo(() => {
     return coins.filter((coin) => watchlist.includes(coin.id));
   }, [coins, watchlist]);
 
-  // This effect runs whenever the number of favorited coins changes.
   React.useEffect(() => {
-    // We trigger the animation *before* the state update causes a re-render.
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
   }, [favoritedCoins.length]);
 

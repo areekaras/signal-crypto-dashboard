@@ -4,6 +4,7 @@ import { theme } from "../theme/theme";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import { Ionicons } from "@expo/vector-icons";
 
 interface PriceTickerProps {
   id: string;
@@ -12,6 +13,7 @@ interface PriceTickerProps {
   price: number;
   priceChangePercentage: number;
   iconUrl: string;
+  onRemove?: (coinId: string) => void;
 }
 
 type NavigationProps = StackNavigationProp<RootStackParamList, "Details">;
@@ -23,6 +25,7 @@ const PriceTickerComponent: React.FC<PriceTickerProps> = ({
   price,
   priceChangePercentage,
   iconUrl,
+  onRemove,
 }) => {
   const navigation = useNavigation<NavigationProps>();
 
@@ -53,6 +56,18 @@ const PriceTickerComponent: React.FC<PriceTickerProps> = ({
           {priceChangePercentage.toFixed(2)}%
         </Text>
       </View>
+      {onRemove && (
+        <TouchableOpacity
+          onPress={() => onRemove(id)}
+          style={styles.removeButton}
+        >
+          <Ionicons
+            name="trash-outline"
+            size={22}
+            color={theme.colors.subtext}
+          />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 };
@@ -102,6 +117,11 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontSize: 14,
     marginTop: 2,
+  },
+  removeButton: {
+    paddingLeft: theme.spacing.m,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
