@@ -1,8 +1,28 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import { theme } from "../theme/theme";
 import { useCryptoStore } from "../state/useCryptoStore";
 import PriceTicker from "../components/PriceTicker";
+import { Coin } from "../api/coingeckoAPI";
+
+// THE FIX: Define renderItem outside the component.
+// This ensures the function reference is stable and not re-created on every render.
+const renderItem = ({ item }: { item: Coin }) => (
+  <PriceTicker
+    id={item.id}
+    name={item.name}
+    symbol={item.symbol}
+    price={item.current_price}
+    priceChangePercentage={item.price_change_percentage_24h}
+    iconUrl={item.image}
+  />
+);
 
 const WatchlistScreen = () => {
   const { coins, watchlist, loadingWatchlist } = useCryptoStore();
@@ -14,7 +34,11 @@ const WatchlistScreen = () => {
   }, [coins, watchlist]);
 
   if (loadingWatchlist) {
-    return <View style={styles.container} />;
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
   if (favoritedCoins.length === 0) {
@@ -32,25 +56,18 @@ const WatchlistScreen = () => {
     <View style={styles.container}>
       <FlatList
         data={favoritedCoins}
-        renderItem={({ item }) => (
-          <PriceTicker
-            id={item.id}
-            name={item.name}
-            symbol={item.symbol}
-            price={item.current_price}
-            priceChangePercentage={item.price_change_percentage_24h}
-            iconUrl={item.image}
-          />
-        )}
+        renderItem={renderItem}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        initialNumToRender={15} // Render a bit more on the initial load
+        initialNumToRender={15}
         maxToRenderPerBatch={10}
         windowSize={10}
-        getItemLayout={(data, index) =>
+        getItemLayout={(data, index) => ({
           // Height of one row (PriceTicker) + height of one separator
-          ({ length: 72 + 1, offset: (72 + 1) * index, index })
-        }
+          length: 72 + 1,
+          offset: (72 + 1) * index,
+          index,
+        })}
       />
     </View>
   );
