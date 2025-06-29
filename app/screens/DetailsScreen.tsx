@@ -13,7 +13,6 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import { fetchHistoricalData } from "../api/coingeckoAPI";
 import { LineChart } from "react-native-chart-kit";
 import { useCryptoStore } from "../state/useCryptoStore";
-import { useWatchlist } from "../hooks/useWatchlist";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -28,7 +27,7 @@ const DetailsScreen = () => {
   const coin = useCryptoStore((state) =>
     state.coins.find((c) => c.id === coinId)
   );
-  const { watchlist, toggleWatchlist } = useWatchlist();
+  const { watchlist, toggleWatchlist } = useCryptoStore();
 
   const [chartData, setChartData] = React.useState<number[]>([]);
   const [loadingChart, setLoadingChart] = React.useState(true);

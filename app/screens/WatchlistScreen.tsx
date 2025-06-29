@@ -2,12 +2,10 @@ import React from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { theme } from "../theme/theme";
 import { useCryptoStore } from "../state/useCryptoStore";
-import { useWatchlist } from "../hooks/useWatchlist";
 import PriceTicker from "../components/PriceTicker";
 
 const WatchlistScreen = () => {
-  const { coins } = useCryptoStore();
-  const { watchlist, loading } = useWatchlist();
+  const { coins, watchlist, loadingWatchlist } = useCryptoStore();
 
   // Use React.useMemo to efficiently filter the coins.
   // This will only re-calculate when the 'coins' or 'watchlist' arrays change.
@@ -15,7 +13,7 @@ const WatchlistScreen = () => {
     return coins.filter((coin) => watchlist.includes(coin.id));
   }, [coins, watchlist]);
 
-  if (loading) {
+  if (loadingWatchlist) {
     return <View style={styles.container} />;
   }
 
