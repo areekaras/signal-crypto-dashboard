@@ -77,6 +77,11 @@ const DetailsScreen = () => {
     );
   }
 
+  const priceChangeStyle =
+    coin.price_change_percentage_24h >= 0
+      ? styles.positiveChange
+      : styles.negativeChange;
+
   const renderChart = () => {
     if (isLoading) {
       return (
@@ -128,12 +133,17 @@ const DetailsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.price}>
-        {new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(coin.current_price)}
-      </Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.price}>
+          {new Intl.NumberFormat("en-SG", {
+            style: "currency",
+            currency: "SGD",
+          }).format(coin.current_price)}
+        </Text>
+        <Text style={priceChangeStyle}>
+          {coin.price_change_percentage_24h.toFixed(2)}% (24h)
+        </Text>
+      </View>
       {renderChart()}
     </View>
   );
@@ -145,10 +155,23 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     padding: theme.spacing.m,
   },
+  headerContainer: {
+    marginBottom: theme.spacing.l,
+  },
   price: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: "bold",
     color: theme.colors.text,
+  },
+  positiveChange: {
+    color: theme.colors.success,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  negativeChange: {
+    color: theme.colors.error,
+    fontSize: 16,
+    fontWeight: "600",
   },
   text: {
     color: theme.colors.text,
@@ -159,13 +182,12 @@ const styles = StyleSheet.create({
   },
   chartStatus: {
     height: 220,
-    marginTop: 8,
-    textAlign: "center",
-    paddingTop: 100,
+    justifyContent: "center",
+    alignItems: "center",
   },
   chart: {
+    marginLeft: -theme.spacing.m,
     marginVertical: 8,
-    borderRadius: 16,
   },
 });
 

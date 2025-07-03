@@ -5,33 +5,39 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  LayoutAnimation,
 } from "react-native";
 import { theme } from "../theme/theme";
 import { useCryptoStore } from "../state/useCryptoStore";
 import PriceTicker from "../components/PriceTicker";
 import { Coin } from "../api/coingeckoAPI";
 
-// THE FIX: Define renderItem outside the component.
-// This ensures the function reference is stable and not re-created on every render.
-const renderItem = ({ item }: { item: Coin }) => (
-  <PriceTicker
-    id={item.id}
-    name={item.name}
-    symbol={item.symbol}
-    price={item.current_price}
-    priceChangePercentage={item.price_change_percentage_24h}
-    iconUrl={item.image}
-  />
-);
-
 const WatchlistScreen = () => {
-  const { coins, watchlist, loadingWatchlist } = useCryptoStore();
+  const { coins, watchlist, loadingWatchlist, toggleWatchlist } =
+    useCryptoStore();
 
-  // Use React.useMemo to efficiently filter the coins.
-  // This will only re-calculate when the 'coins' or 'watchlist' arrays change.
+  const renderItem = React.useCallback(
+    ({ item }: { item: Coin }) => (
+      <PriceTicker
+        id={item.id}
+        name={item.name}
+        symbol={item.symbol}
+        price={item.current_price}
+        priceChangePercentage={item.price_change_percentage_24h}
+        iconUrl={item.image}
+        onRemove={toggleWatchlist}
+      />
+    ),
+    [toggleWatchlist]
+  );
+
   const favoritedCoins = React.useMemo(() => {
     return coins.filter((coin) => watchlist.includes(coin.id));
   }, [coins, watchlist]);
+
+  React.useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+  }, [favoritedCoins.length]);
 
   if (loadingWatchlist) {
     return (
@@ -63,7 +69,6 @@ const WatchlistScreen = () => {
         maxToRenderPerBatch={10}
         windowSize={10}
         getItemLayout={(data, index) => ({
-          // Height of one row (PriceTicker) + height of one separator
           length: 72 + 1,
           offset: (72 + 1) * index,
           index,

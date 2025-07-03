@@ -4,15 +4,22 @@ import { StatusBar } from "expo-status-bar";
 import AppNavigator from "./app/navigation/AppNavigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useCryptoStore } from "./app/state/useCryptoStore";
+import { UIManager, Platform } from "react-native";
+
+// This is a one-time setup for LayoutAnimation to work on Android
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function App() {
-  // Get the loadWatchlist action from the store
   const { loadWatchlist } = useCryptoStore();
 
-  // On initial app load, call the action to load data from AsyncStorage
   React.useEffect(() => {
     loadWatchlist();
-  }, []);
+  }, [loadWatchlist]);
 
   return (
     <SafeAreaProvider>
