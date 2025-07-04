@@ -1,6 +1,6 @@
 # Signal: A High-Performance React Native Cryptocurrency Dashboard
 
-> **![Signal Crypto App](/assets/final-app-video.mp4){: width="350" }**
+> **[Signal Crypto App Demo](https://shibiliareekara.com/posts/7-day-challenge-complete-a-pro-level-react-native-app-in-under-11-hours/)**
 
 Signal is a real-time cryptocurrency tracking application for the iOS and Android platforms, conceived and executed as a personal 7-day development challenge. This project serves as a demonstration of a modern, production-ready React Native technology stack, emphasizing high-performance features, a clean architectural pattern, and a refined user experience.
 
