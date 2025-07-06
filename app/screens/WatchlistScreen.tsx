@@ -16,6 +16,12 @@ const WatchlistScreen = () => {
   const { coins, watchlist, loadingWatchlist, toggleWatchlist } =
     useCryptoStore();
 
+  const isInitialRender = React.useRef(true);
+
+  const favoritedCoins = React.useMemo(() => {
+    return coins.filter((coin) => watchlist.includes(coin.id));
+  }, [coins, watchlist]);
+
   const renderItem = React.useCallback(
     ({ item }: { item: Coin }) => (
       <PriceTicker
@@ -31,11 +37,12 @@ const WatchlistScreen = () => {
     [toggleWatchlist]
   );
 
-  const favoritedCoins = React.useMemo(() => {
-    return coins.filter((coin) => watchlist.includes(coin.id));
-  }, [coins, watchlist]);
-
   React.useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
   }, [favoritedCoins.length]);
 
