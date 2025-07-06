@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from "react-native";
 import { theme } from "../theme/theme";
 import { fetchTop100Coins, Coin } from "../api/coingeckoAPI";
@@ -27,6 +28,7 @@ const MarketsScreen = () => {
   const { coins, setCoins, updateCoinPrice } = useCryptoStore();
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   const loadCoins = React.useCallback(async () => {
     try {
@@ -45,12 +47,10 @@ const MarketsScreen = () => {
 
   React.useEffect(() => {
     const ws = new WebSocketService();
-
     const getInitialDataAndConnect = async () => {
       setLoading(true);
       await loadCoins();
       setLoading(false);
-
       const productIds = useCryptoStore
         .getState()
         .coins.map((coin) => `${coin.symbol.toUpperCase()}-SGD`);
@@ -68,13 +68,22 @@ const MarketsScreen = () => {
         }
       });
     };
-
     getInitialDataAndConnect();
-
     return () => {
       ws.disconnect();
     };
   }, [loadCoins, updateCoinPrice]);
+
+  const filteredCoins = React.useMemo(() => {
+    if (!searchQuery) {
+      return coins;
+    }
+    return coins.filter(
+      (coin) =>
+        coin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        coin.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [coins, searchQuery]);
 
   if (loading) {
     return (
@@ -86,8 +95,17 @@ const MarketsScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Coins..."
+          placeholderTextColor={theme.colors.subtext}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
       <FlatList
-        data={coins}
+        data={filteredCoins}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -103,7 +121,7 @@ const MarketsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={theme.colors.primary} // For iOS
+            tintColor={theme.colors.primary}
           />
         }
       />
@@ -119,6 +137,19 @@ const styles = StyleSheet.create({
   center: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  searchContainer: {
+    padding: theme.spacing.m,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.foreground,
+  },
+  searchInput: {
+    backgroundColor: theme.colors.foreground,
+    color: theme.colors.text,
+    paddingHorizontal: theme.spacing.m,
+    paddingVertical: theme.spacing.s,
+    borderRadius: 8,
+    fontSize: 16,
   },
   separator: {
     height: 1,
