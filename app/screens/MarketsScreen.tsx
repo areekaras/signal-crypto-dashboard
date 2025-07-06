@@ -1,13 +1,17 @@
 import React from "react";
-import { View, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { theme } from "../theme/theme";
 import { fetchTop100Coins, Coin } from "../api/coingeckoAPI";
 import PriceTicker from "../components/PriceTicker";
 import { useCryptoStore } from "../state/useCryptoStore";
 import { WebSocketService } from "../api/websocketService";
 
-// THE FIX: Define renderItem outside the component.
-// This ensures the function reference is stable and not re-created on every render.
 const renderItem = ({ item }: { item: Coin }) => (
   <PriceTicker
     id={item.id}
@@ -20,57 +24,57 @@ const renderItem = ({ item }: { item: Coin }) => (
 );
 
 const MarketsScreen = () => {
-  // Get state and actions from the Zustand store
   const { coins, setCoins, updateCoinPrice } = useCryptoStore();
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const loadCoins = React.useCallback(async () => {
+    try {
+      const initialCoins = await fetchTop100Coins();
+      setCoins(initialCoins);
+    } catch (error) {
+      console.error("Failed to fetch coins:", error);
+    }
+  }, [setCoins]);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await loadCoins();
+    setRefreshing(false);
+  }, [loadCoins]);
 
   React.useEffect(() => {
     const ws = new WebSocketService();
 
     const getInitialDataAndConnect = async () => {
-      try {
-        setLoading(true);
-        const initialCoins = await fetchTop100Coins();
-        setCoins(initialCoins);
+      setLoading(true);
+      await loadCoins();
+      setLoading(false);
 
-        // Convert coin symbols to Coinbase product_ids (e.g., 'bitcoin' -> 'BTC-SGD')
-        const productIds = initialCoins.map(
-          (coin) => `${coin.symbol.toUpperCase()}-SGD`
-        );
-
-        // Connect to WebSocket with the list of product IDs
-        ws.connect(productIds, (productId, price, change) => {
-          // The ID from WebSocket is 'BTC-SGD', we need to find the coin by its symbol 'btc'
-          const symbol = productId.split("-")[0].toLowerCase();
-
-          // THE FIX: Access the latest state directly from the store
-          // to avoid the stale closure problem.
-          const coinToUpdate = useCryptoStore
-            .getState()
-            .coins.find((c) => c.symbol === symbol);
-
-          if (coinToUpdate) {
-            updateCoinPrice(
-              coinToUpdate.id,
-              parseFloat(price),
-              parseFloat(change)
-            );
-          }
-        });
-      } catch (error) {
-        console.error("Failed to fetch coins:", error);
-      } finally {
-        setLoading(false);
-      }
+      const productIds = useCryptoStore
+        .getState()
+        .coins.map((coin) => `${coin.symbol.toUpperCase()}-SGD`);
+      ws.connect(productIds, (productId, price, change) => {
+        const symbol = productId.split("-")[0].toLowerCase();
+        const coinToUpdate = useCryptoStore
+          .getState()
+          .coins.find((c) => c.symbol === symbol);
+        if (coinToUpdate) {
+          updateCoinPrice(
+            coinToUpdate.id,
+            parseFloat(price),
+            parseFloat(change)
+          );
+        }
+      });
     };
 
     getInitialDataAndConnect();
 
-    // Disconnect when the component unmounts
     return () => {
       ws.disconnect();
     };
-  }, [setCoins, updateCoinPrice]);
+  }, [loadCoins, updateCoinPrice]);
 
   if (loading) {
     return (
@@ -91,11 +95,17 @@ const MarketsScreen = () => {
         maxToRenderPerBatch={10}
         windowSize={10}
         getItemLayout={(data, index) => ({
-          // Height of one row (PriceTicker) + height of one separator
           length: 72 + 1,
           offset: (72 + 1) * index,
           index,
         })}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary} // For iOS
+          />
+        }
       />
     </View>
   );
